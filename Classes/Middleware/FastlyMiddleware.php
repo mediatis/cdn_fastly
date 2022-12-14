@@ -81,7 +81,7 @@ class FastlyMiddleware implements MiddlewareInterface
         ];
 
         $cacheControlHeaderValue = $response->getHeader('Cache-Control')[0];
-        if (\mb_strpos($cacheControlHeaderValue, 'private') !== false) {
+        if ($cacheControlHeaderValue !== null && \mb_strpos($cacheControlHeaderValue, 'private') !== false) {
             return $response;
         }
 
