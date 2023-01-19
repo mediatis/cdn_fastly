@@ -54,19 +54,23 @@ class FastlyService extends AbstractService
         if (empty($keys)) {
             return;
         }
-        try {
-            $this->getClient()->request('POST', 'purge/', [
-                'headers' => [
-                    'Surrogate-Key' => implode(' ', $keys),
-                ],
-            ]);
-            if ($this->logger) {
-                $this->logger->debug(\sprintf('FASTLY PURGE KEYS (%s)', implode(' ', $keys)));
-            }
-        } catch (\Exception $exception) {
-            if ($this->logger) {
-                $message = 'Fastly service id is not available!';
-                $this->logger->error($message);
+        //  Batch surrogate key request only supports up to 256 surrogate keys
+        $arrayChunks = array_chunk( $keys, 256);
+        foreach ($arrayChunks as $keys) {
+            try {
+                $this->getClient()->request('POST', 'purge/', [
+                    'headers' => [
+                        'Surrogate-Key' => implode(' ', $keys),
+                    ],
+                ]);
+                if ($this->logger) {
+                    $this->logger->debug(\sprintf('FASTLY PURGE KEYS (%s)', implode(' ', $keys)));
+                }
+            } catch (\Exception $exception) {
+                if ($this->logger) {
+                    $message = 'Fastly service id is not available!';
+                    $this->logger->error($message);
+                }
             }
         }
     }
